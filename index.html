@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landing Channel Detection</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    .channel {
+      font-size: 1.4rem;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    .Direct { background: #e3f2fd; color: #1565c0; }
+    .Paid { background: #fce4ec; color: #ad1457; }
+    .Organic { background: #e8f5e9; color: #2e7d32; }
+    .Social { background: #f3e5f5; color: #6a1b9a; }
+    .Referral { background: #fff3e0; color: #ef6c00; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Landing Channel Detected:</h1>
+    <div id="channel" class="channel">Detecting...</div>
+  </div>
+
+  <script>
+    function getLandingChannel() {
+      const referrer = document.referrer;
+      const urlParams = new URLSearchParams(window.location.search);
+
+      // Check for Paid / Campaign traffic
+      if (
+        urlParams.has("utm_source") || 
+        urlParams.has("utm_medium") || 
+        urlParams.has("utm_campaign")
+      ) {
+        return "Paid";
+      }
+
+      // Direct (no referrer and no UTM params)
+      if (!referrer) {
+        return "Direct";
+      }
+
+      // Organic Search
+      const searchEngines = [
+        "google.",
+        "bing.",
+        "yahoo.",
+        "baidu.",
+        "yandex.",
+        "duckduckgo."
+      ];
+      if (searchEngines.some(engine => referrer.includes(engine))) {
+        return "Organic";
+      }
+
+      // Social Media
+      const socialSites = [
+        "facebook.com",
+        "twitter.com",
+        "t.co",
+        "linkedin.com",
+        "instagram.com",
+        "pinterest.com",
+        "reddit.com"
+      ];
+      if (socialSites.some(site => referrer.includes(site))) {
+        return "Social";
+      }
+
+      // Referral (default case with referrer)
+      return "Referral";
+    }
+
+    // Display the channel
+    const channel = getLandingChannel();
+    const channelElement = document.getElementById("channel");
+    channelElement.textContent = channel;
+    channelElement.classList.add(channel);
+  </script>
+</body>
+</html>
