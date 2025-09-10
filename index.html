@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Landing Channel Detection</title>
+  <title>Landing Channel + GA Client ID</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -24,13 +24,13 @@
       text-align: center;
     }
     h1 {
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       margin-bottom: 10px;
     }
     .channel {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: bold;
-      padding: 10px;
+      padding: 8px 12px;
       border-radius: 8px;
       display: inline-block;
     }
@@ -39,7 +39,8 @@
     .Organic { background: #e8f5e9; color: #2e7d32; }
     .Social { background: #f3e5f5; color: #6a1b9a; }
     .Referral { background: #fff3e0; color: #ef6c00; }
-    p { margin-top: 8px; font-size: 1rem; color: #555; }
+    p { margin-top: 6px; font-size: 0.95rem; color: #555; }
+    .id { font-weight: bold; color: #444; }
   </style>
 </head>
 <body>
@@ -47,8 +48,8 @@
     <h1>Landing Channel Detected:</h1>
     <div id="channel" class="channel">Detecting...</div>
     <p id="details"></p>
+    <p>GA Client ID: <span id="gaid" class="id">Fetching...</span></p>
   </div>
-
   <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0Q9PRQV2XR"></script>
 <script>
@@ -60,11 +61,12 @@
 </script>
 
   <script>
+    // ---------- Detect Landing Channel ----------
     function getLandingChannelDetails() {
       const referrer = document.referrer;
       const urlParams = new URLSearchParams(window.location.search);
 
-      // Check for Paid (Campaign)
+      // Paid
       if (urlParams.has("utm_source") || urlParams.has("utm_medium")) {
         const source = urlParams.get("utm_source") || "Unknown";
         return { channel: "Paid", source: source };
@@ -75,7 +77,7 @@
         return { channel: "Direct", source: "None" };
       }
 
-      // Define search engines
+      // Search Engines
       const searchEngines = {
         "google.": "Google",
         "bing.": "Bing",
@@ -84,14 +86,13 @@
         "yandex.": "Yandex",
         "duckduckgo.": "DuckDuckGo"
       };
-
       for (let key in searchEngines) {
         if (referrer.includes(key)) {
           return { channel: "Organic", source: searchEngines[key] };
         }
       }
 
-      // Define social networks
+      // Social
       const socialSites = {
         "facebook.com": "Facebook",
         "twitter.com": "Twitter",
@@ -101,14 +102,13 @@
         "pinterest.com": "Pinterest",
         "reddit.com": "Reddit"
       };
-
       for (let key in socialSites) {
         if (referrer.includes(key)) {
           return { channel: "Social", source: socialSites[key] };
         }
       }
 
-      // Referral (default)
+      // Referral (everything else)
       try {
         const refDomain = new URL(referrer).hostname;
         return { channel: "Referral", source: refDomain };
@@ -117,14 +117,28 @@
       }
     }
 
-    // Display results
-    const { channel, source } = getLandingChannelDetails();
-    const channelElement = document.getElementById("channel");
-    const detailsElement = document.getElementById("details");
+    // ---------- Get GA Client ID ----------
+    function getGAClientId() {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith("_ga=")) {
+          // GA cookie format: GA1.2.XXXXXXXXX.YYYYYYYYYY
+          const parts = cookie.split(".");
+          if (parts.length >= 4) {
+            return parts[2] + "." + parts[3]; // Client ID part
+          }
+        }
+      }
+      return "Not Found";
+    }
 
-    channelElement.textContent = channel;
-    channelElement.classList.add(channel);
-    detailsElement.textContent = "Source: " + source;
+    // ---------- Display Results ----------
+    const { channel, source } = getLandingChannelDetails();
+    document.getElementById("channel").textContent = channel;
+    document.getElementById("channel").classList.add(channel);
+    document.getElementById("details").textContent = "Source: " + source;
+    document.getElementById("gaid").textContent = getGAClientId();
   </script>
 </body>
 </html>
