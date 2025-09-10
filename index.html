@@ -39,69 +39,82 @@
     .Organic { background: #e8f5e9; color: #2e7d32; }
     .Social { background: #f3e5f5; color: #6a1b9a; }
     .Referral { background: #fff3e0; color: #ef6c00; }
+    p { margin-top: 8px; font-size: 1rem; color: #555; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Landing Channel Detected:</h1>
     <div id="channel" class="channel">Detecting...</div>
+    <p id="details"></p>
   </div>
 
   <script>
-    function getLandingChannel() {
+    function getLandingChannelDetails() {
       const referrer = document.referrer;
       const urlParams = new URLSearchParams(window.location.search);
 
-      // Check for Paid / Campaign traffic
-      if (
-        urlParams.has("utm_source") || 
-        urlParams.has("utm_medium") || 
-        urlParams.has("utm_campaign")
-      ) {
-        return "Paid";
+      // Check for Paid (Campaign)
+      if (urlParams.has("utm_source") || urlParams.has("utm_medium")) {
+        const source = urlParams.get("utm_source") || "Unknown";
+        return { channel: "Paid", source: source };
       }
 
-      // Direct (no referrer and no UTM params)
+      // Direct
       if (!referrer) {
-        return "Direct";
+        return { channel: "Direct", source: "None" };
       }
 
-      // Organic Search
-      const searchEngines = [
-        "google.",
-        "bing.",
-        "yahoo.",
-        "baidu.",
-        "yandex.",
-        "duckduckgo."
-      ];
-      if (searchEngines.some(engine => referrer.includes(engine))) {
-        return "Organic";
+      // Define search engines
+      const searchEngines = {
+        "google.": "Google",
+        "bing.": "Bing",
+        "yahoo.": "Yahoo",
+        "baidu.": "Baidu",
+        "yandex.": "Yandex",
+        "duckduckgo.": "DuckDuckGo"
+      };
+
+      for (let key in searchEngines) {
+        if (referrer.includes(key)) {
+          return { channel: "Organic", source: searchEngines[key] };
+        }
       }
 
-      // Social Media
-      const socialSites = [
-        "facebook.com",
-        "twitter.com",
-        "t.co",
-        "linkedin.com",
-        "instagram.com",
-        "pinterest.com",
-        "reddit.com"
-      ];
-      if (socialSites.some(site => referrer.includes(site))) {
-        return "Social";
+      // Define social networks
+      const socialSites = {
+        "facebook.com": "Facebook",
+        "twitter.com": "Twitter",
+        "t.co": "Twitter",
+        "linkedin.com": "LinkedIn",
+        "instagram.com": "Instagram",
+        "pinterest.com": "Pinterest",
+        "reddit.com": "Reddit"
+      };
+
+      for (let key in socialSites) {
+        if (referrer.includes(key)) {
+          return { channel: "Social", source: socialSites[key] };
+        }
       }
 
-      // Referral (default case with referrer)
-      return "Referral";
+      // Referral (default)
+      try {
+        const refDomain = new URL(referrer).hostname;
+        return { channel: "Referral", source: refDomain };
+      } catch (e) {
+        return { channel: "Referral", source: "Unknown" };
+      }
     }
 
-    // Display the channel
-    const channel = getLandingChannel();
+    // Display results
+    const { channel, source } = getLandingChannelDetails();
     const channelElement = document.getElementById("channel");
+    const detailsElement = document.getElementById("details");
+
     channelElement.textContent = channel;
     channelElement.classList.add(channel);
+    detailsElement.textContent = "Source: " + source;
   </script>
 </body>
 </html>
